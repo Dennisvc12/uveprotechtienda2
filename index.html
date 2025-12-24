@@ -2,138 +2,194 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Pedido y Confirmación</title>
+<title>Pedido - Boleta</title>
+
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f4f6f8;
-        padding: 20px;
-    }
-    .boleta {
-        max-width: 400px;
-        margin: auto;
-        background: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0,0,0,.1);
-    }
-    h2 {
-        text-align: center;
-        margin-bottom: 10px;
-    }
-    .producto {
-        display: flex;
-        justify-content: space-between;
-        margin: 8px 0;
-    }
-    input[type="number"], input[type="text"] {
-        width: 100%;
-        padding: 6px;
-        margin: 6px 0;
-    }
-    button {
-        width: 100%;
-        padding: 10px;
-        margin-top: 8px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-    }
-    .btn-confirmar {
-        background: #25D366;
-        color: #fff;
-    }
-    .btn-imprimir {
-        background: #333;
-        color: #fff;
-    }
-    .total {
-        font-weight: bold;
-        text-align: right;
-        margin-top: 10px;
-    }
+body {
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+    padding: 20px;
+}
+.contenedor {
+    max-width: 420px;
+    margin: auto;
+    background: #fff;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 0 10px rgba(0,0,0,.1);
+}
+h2 {
+    text-align: center;
+}
+.producto {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 8px 0;
+}
+.producto button {
+    width: 30px;
+    height: 30px;
+    font-size: 18px;
+}
+.cantidad {
+    width: 30px;
+    text-align: center;
+}
+.boleta {
+    border-top: 1px dashed #ccc;
+    margin-top: 10px;
+    padding-top: 10px;
+    font-size: 14px;
+}
+.total {
+    font-weight: bold;
+    text-align: right;
+    margin-top: 8px;
+}
+input {
+    width: 100%;
+    padding: 6px;
+    margin-bottom: 8px;
+}
+button.confirmar {
+    background: #25D366;
+    color: #fff;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+button.imprimir {
+    background: #333;
+    color: #fff;
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: 5px;
+    margin-top: 6px;
+}
 </style>
 </head>
 
 <body>
 
-<div class="boleta" id="boleta">
-    <h2>🧾 Boleta de Pedido</h2>
+<div class="contenedor" id="boleta">
+    <h2>🧾 Pedido</h2>
 
-    <label>Nombre del cliente</label>
-    <input type="text" id="cliente" placeholder="Ej: Juan Pérez">
+    <input type="text" id="cliente" placeholder="Nombre del cliente">
 
+    <!-- PRODUCTOS -->
     <div class="producto">
-        <span>Producto A (S/ 10)</span>
-        <input type="number" min="0" value="0" onchange="calcular()"
-               data-precio="10">
+        Perrito caliente S/3.00
+        <div>
+            <button onclick="cambiar('perrito', -1)">−</button>
+            <span class="cantidad" id="perrito">0</span>
+            <button onclick="cambiar('perrito', 1)">+</button>
+        </div>
     </div>
 
     <div class="producto">
-        <span>Producto B (S/ 15)</span>
-        <input type="number" min="0" value="0" onchange="calcular()"
-               data-precio="15">
+        Gaseosa personal S/1.20
+        <div>
+            <button onclick="cambiar('gaseosa', -1)">−</button>
+            <span class="cantidad" id="gaseosa">0</span>
+            <button onclick="cambiar('gaseosa', 1)">+</button>
+        </div>
     </div>
 
     <div class="producto">
-        <span>Producto C (S/ 8)</span>
-        <input type="number" min="0" value="0" onchange="calcular()"
-               data-precio="8">
+        Hamburguesa S/3.00
+        <div>
+            <button onclick="cambiar('hamburguesa', -1)">−</button>
+            <span class="cantidad" id="hamburguesa">0</span>
+            <button onclick="cambiar('hamburguesa', 1)">+</button>
+        </div>
     </div>
 
-    <div class="total" id="total">Total: S/ 0.00</div>
+    <!-- VISTA PREVIA -->
+    <div class="boleta">
+        <strong>Vista previa de boleta</strong>
+        <div id="detalle"></div>
+        <div class="total" id="total">Total: S/ 0.00</div>
+    </div>
 
-    <button class="btn-confirmar" onclick="enviarPedido()">
-        ✅ Confirmar compra (Yape / Plin)
+    <button class="confirmar" onclick="enviarWhatsApp()">
+        ✅ Compra realizada
     </button>
 
-    <button class="btn-imprimir" onclick="window.print()">
+    <button class="imprimir" onclick="window.print()">
         🖨 Imprimir boleta
     </button>
 </div>
 
 <script>
-function calcular() {
+const precios = {
+    perrito: 3.00,
+    gaseosa: 1.20,
+    hamburguesa: 3.00
+};
+
+function cambiar(id, valor) {
+    let span = document.getElementById(id);
+    let cantidad = parseInt(span.innerText) + valor;
+    if (cantidad < 0) cantidad = 0;
+    span.innerText = cantidad;
+    actualizarBoleta();
+}
+
+function actualizarBoleta() {
+    let detalle = "";
     let total = 0;
-    document.querySelectorAll('input[type="number"]').forEach(input => {
-        total += input.value * input.dataset.precio;
-    });
+
+    for (let p in precios) {
+        let cant = parseInt(document.getElementById(p).innerText);
+        if (cant > 0) {
+            let subtotal = cant * precios[p];
+            detalle += `${cant} x ${p} = S/ ${subtotal.toFixed(2)}<br>`;
+            total += subtotal;
+        }
+    }
+
+    document.getElementById("detalle").innerHTML = detalle || "Sin productos";
     document.getElementById("total").innerText = "Total: S/ " + total.toFixed(2);
 }
 
-function enviarPedido() {
+function enviarWhatsApp() {
     let cliente = document.getElementById("cliente").value;
     if (!cliente) {
         alert("Ingrese el nombre del cliente");
         return;
     }
 
-    let mensaje = "🧾 *Nuevo Pedido*\n";
+    let mensaje = "🧾 *BOLETA DE COMPRA*\n";
     mensaje += "Cliente: " + cliente + "\n\n";
 
     let total = 0;
-    document.querySelectorAll('input[type="number"]').forEach((input, i) => {
-        if (input.value > 0) {
-            let nombre = input.parentElement.children[0].innerText;
-            mensaje += nombre + " x " + input.value + "\n";
-            total += input.value * input.dataset.precio;
+
+    for (let p in precios) {
+        let cant = parseInt(document.getElementById(p).innerText);
+        if (cant > 0) {
+            let subtotal = cant * precios[p];
+            mensaje += `${cant} x ${p} = S/ ${subtotal.toFixed(2)}\n`;
+            total += subtotal;
         }
-    });
+    }
+
+    if (total === 0) {
+        alert("Seleccione al menos un producto");
+        return;
+    }
 
     mensaje += "\n💰 Total: S/ " + total.toFixed(2);
-    mensaje += "\n📲 Pago realizado por Yape / Plin";
+    mensaje += "\n💳 Pago: Yape / Plin / Efectivo";
+    mensaje += "\n✅ Compra realizada";
 
-    // 👉 WHATSAPP (CAMBIA EL NÚMERO)
-    let telefono = "51999999999"; // +51 Perú
-    let urlWhatsapp = "https://wa.me/" + telefono + "?text=" + encodeURIComponent(mensaje);
-    window.open(urlWhatsapp, "_blank");
-
-    // 👉 CORREO (OPCIONAL)
-    let email = "tucorreo@gmail.com";
-    let asunto = "Nuevo pedido confirmado";
-    let mailto = `mailto:${email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(mensaje)}`;
-    window.location.href = mailto;
+    let telefono = "51912994557";
+    let url = "https://wa.me/" + telefono + "?text=" + encodeURIComponent(mensaje);
+    window.open(url, "_blank");
 }
 </script>
 
