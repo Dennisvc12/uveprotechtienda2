@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Pedido y Confirmación</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f6f8;
+        padding: 20px;
+    }
+    .boleta {
+        max-width: 400px;
+        margin: auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,.1);
+    }
+    h2 {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    .producto {
+        display: flex;
+        justify-content: space-between;
+        margin: 8px 0;
+    }
+    input[type="number"], input[type="text"] {
+        width: 100%;
+        padding: 6px;
+        margin: 6px 0;
+    }
+    button {
+        width: 100%;
+        padding: 10px;
+        margin-top: 8px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    .btn-confirmar {
+        background: #25D366;
+        color: #fff;
+    }
+    .btn-imprimir {
+        background: #333;
+        color: #fff;
+    }
+    .total {
+        font-weight: bold;
+        text-align: right;
+        margin-top: 10px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="boleta" id="boleta">
+    <h2>🧾 Boleta de Pedido</h2>
+
+    <label>Nombre del cliente</label>
+    <input type="text" id="cliente" placeholder="Ej: Juan Pérez">
+
+    <div class="producto">
+        <span>Producto A (S/ 10)</span>
+        <input type="number" min="0" value="0" onchange="calcular()"
+               data-precio="10">
+    </div>
+
+    <div class="producto">
+        <span>Producto B (S/ 15)</span>
+        <input type="number" min="0" value="0" onchange="calcular()"
+               data-precio="15">
+    </div>
+
+    <div class="producto">
+        <span>Producto C (S/ 8)</span>
+        <input type="number" min="0" value="0" onchange="calcular()"
+               data-precio="8">
+    </div>
+
+    <div class="total" id="total">Total: S/ 0.00</div>
+
+    <button class="btn-confirmar" onclick="enviarPedido()">
+        ✅ Confirmar compra (Yape / Plin)
+    </button>
+
+    <button class="btn-imprimir" onclick="window.print()">
+        🖨 Imprimir boleta
+    </button>
+</div>
+
+<script>
+function calcular() {
+    let total = 0;
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        total += input.value * input.dataset.precio;
+    });
+    document.getElementById("total").innerText = "Total: S/ " + total.toFixed(2);
+}
+
+function enviarPedido() {
+    let cliente = document.getElementById("cliente").value;
+    if (!cliente) {
+        alert("Ingrese el nombre del cliente");
+        return;
+    }
+
+    let mensaje = "🧾 *Nuevo Pedido*\n";
+    mensaje += "Cliente: " + cliente + "\n\n";
+
+    let total = 0;
+    document.querySelectorAll('input[type="number"]').forEach((input, i) => {
+        if (input.value > 0) {
+            let nombre = input.parentElement.children[0].innerText;
+            mensaje += nombre + " x " + input.value + "\n";
+            total += input.value * input.dataset.precio;
+        }
+    });
+
+    mensaje += "\n💰 Total: S/ " + total.toFixed(2);
+    mensaje += "\n📲 Pago realizado por Yape / Plin";
+
+    // 👉 WHATSAPP (CAMBIA EL NÚMERO)
+    let telefono = "51999999999"; // +51 Perú
+    let urlWhatsapp = "https://wa.me/" + telefono + "?text=" + encodeURIComponent(mensaje);
+    window.open(urlWhatsapp, "_blank");
+
+    // 👉 CORREO (OPCIONAL)
+    let email = "tucorreo@gmail.com";
+    let asunto = "Nuevo pedido confirmado";
+    let mailto = `mailto:${email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(mensaje)}`;
+    window.location.href = mailto;
+}
+</script>
+
+</body>
+</html>
